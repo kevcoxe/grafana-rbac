@@ -23,10 +23,5 @@ func NewMetrics() *Metrics {
 }
 
 func (m *Metrics) PromHandler(w http.ResponseWriter, req *http.Request) {
-	// Create new metrics and register them using the custom registry.
-	// Set values for the new created metrics.
-	m.PrometheusMetrics.CpuTemp.Set(65.3)
-	m.PrometheusMetrics.HdFailures.With(prometheus.Labels{"device": "/dev/sda"}).Inc()
-	// Serve the metrics from the custom registry.
 	promhttp.HandlerFor(m.PrometheusRegistry, promhttp.HandlerOpts{}).ServeHTTP(w, req)
 }

@@ -34,9 +34,9 @@ func NewProxy(grafanaURL string, m *metrics.Metrics) (Proxy, error) {
 func (p Proxy) GrafanaProxyHandler(w http.ResponseWriter, req *http.Request) {
 
 	p.metrics.RequestInfo.With(prometheus.Labels{
-		"host":   req.Host,
-		"url":    req.URL.String(),
-		"method": req.Method,
+		"host":     req.Host,
+		"received": req.URL.Path,
+		"method":   req.Method,
 	}).Inc()
 
 	fmt.Printf("Request received: %v\n", req.URL.Path)
