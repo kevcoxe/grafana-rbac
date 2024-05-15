@@ -13,7 +13,7 @@ func NewMetrics(reg prometheus.Registerer) *Metrics {
 				Name: "grafana_requests_info",
 				Help: "Number of HTTP requests.",
 			},
-			[]string{"host", "received", "method"},
+			[]string{"host", "received", "method", "ip"},
 		),
 	}
 	reg.MustRegister(m.RequestInfo)

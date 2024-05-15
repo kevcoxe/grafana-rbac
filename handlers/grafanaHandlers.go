@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"grafana-rbac/metrics"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -33,24 +34,42 @@ func NewProxy(grafanaURL string, m *metrics.Metrics) (Proxy, error) {
 
 func (p Proxy) GrafanaProxyHandler(w http.ResponseWriter, req *http.Request) {
 
+	// get request ip address
+	ip, _, _ := net.SplitHostPort(req.RemoteAddr)
+
 	p.metrics.RequestInfo.With(prometheus.Labels{
 		"host":     req.Host,
 		"received": req.URL.Path,
 		"method":   req.Method,
+		"ip":       ip,
 	}).Inc()
 
-	fmt.Printf("Request received: %v\n", req.URL.Path)
-	fmt.Printf("Request host: %v\n", req.Host)
-	fmt.Printf("Request URL: %v\n", req.URL)
-	fmt.Printf("Request method: %v\n", req.Method)
-	fmt.Printf("Request headers: %v\n", req.Header)
-	fmt.Printf("Request cookies: %v\n", req.Cookies())
-	fmt.Printf("Request body: %v\n", req.Body)
-	fmt.Printf("Request context: %v\n", req.Context())
-	fmt.Printf("Request form: %v\n", req.Form)
-	fmt.Println("")
+	// check for cookie
+	cookie, err := req.Cookie("grafana_rbac_session")
+	if err != nil {
+		// create new grafana_rbac_session cookie
+		cookie = &http.Cookie{
+			Name:  "grafana_rbac_session",
+			Value: "annoymous",
+		}
 
-	req.Header.Set("X-WEBAUTH-USER", "admin")
+		// add cookie to response
+		http.SetCookie(w, cookie)
+	}
+
+	// get cookie value
+	user := cookie.Value
+
+	// get context from request
+	// ctx := req.Context()
+	// ctx = context.WithValue(ctx, "user", user)
+
+	fmt.Printf("User: %s\n", user)
+
+	req.Header.Set("X-WEBAUTH-USER", user)
+
+	// update req context with new context
+	// req = req.WithContext(ctx)
 
 	p.proxy.ServeHTTP(w, req)
 }
