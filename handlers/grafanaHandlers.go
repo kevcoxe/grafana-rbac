@@ -50,5 +50,7 @@ func (p Proxy) GrafanaProxyHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Request form: %v\n", req.Form)
 	fmt.Println("")
 
+	req.Header.Set("X-WEBAUTH-USER", "admin")
+
 	p.proxy.ServeHTTP(w, req)
 }
